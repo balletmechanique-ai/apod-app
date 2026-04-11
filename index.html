@@ -119,8 +119,8 @@
         }
 
         async function translateText(text, apiKey) {
-            // 2026年最新の gemini-3.0-flash を使用
-            const model = "gemini-3.0-flash";
+            // 2026年最新の gemini-3-flash を使用
+            const model = "gemini-3-flash";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const prompt = `宇宙の美しさを伝える情緒的な翻訳をしてください。スマホ壁紙の解説として、短く読みやすく、好奇心を刺激する日本語にまとめて。本文:\n${text}`;
 
