@@ -1,253 +1,128 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APOD Wall-Supporter</title>
-    <link rel="manifest"
-        href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjI2LzI2MjYyOTMucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjI2LzI2MjYyOTMucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #050505;
-            color: #e0e0e0;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .loading-shimmer {
-            background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e0e0e0; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .loading-shimmer { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-
 <body class="min-h-screen flex flex-col items-center p-4 pb-32">
 
-    <!-- Header -->
     <header class="w-full max-w-md py-6 flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                APOD Wall-Supporter
-            </h1>
-            <p class="text-[10px] text-gray-500">宇宙の美しさを手元に</p>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">APOD Wall-Supporter</h1>
+            <p class="text-[10px] text-gray-600 tracking-widest uppercase font-bold">balletmechanique-ai</p>
         </div>
-        <button onclick="toggleConfig()" class="p-2 glass rounded-full text-gray-400 hover:text-white transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path
-                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                <circle cx="12" cy="12" r="3" />
-            </svg>
+        <button onclick="toggleConfig()" class="p-2 glass rounded-full text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
     </header>
 
-    <!-- Main Content -->
     <main id="app" class="w-full max-w-md space-y-6">
-
-        <!-- API Configuration Overlay -->
         <div id="config-section" class="glass rounded-3xl p-6 space-y-4 hidden absolute inset-x-4 top-20 z-[60]">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-sm font-semibold text-gray-300">設定</h2>
-                <button onclick="toggleConfig()" class="text-gray-500">&times;</button>
-            </div>
+            <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-gray-300">Settings</h2><button onclick="toggleConfig()" class="text-gray-500 text-2xl">&times;</button></div>
             <div class="space-y-3">
-                <label class="block">
-                    <span class="text-[10px] text-gray-500 ml-1">NASA API Key</span>
-                    <input type="password" id="nasa-key" placeholder="DEMO_KEY"
-                        class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </label>
-                <label class="block">
-                    <span class="text-[10px] text-gray-500 ml-1">Gemini API Key (翻訳用)</span>
-                    <input type="password" id="gemini-key" placeholder="Enter API Key"
-                        class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                </label>
-                <label class="block">
-                    <span class="text-[10px] text-gray-500 ml-1">リマインド通知時間</span>
-                    <div class="flex gap-2">
-                        <input type="time" id="notify-time"
-                            class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none">
-                        <button onclick="requestNotificationPermission()" id="btn-perm"
-                            class="px-3 bg-gray-800 rounded-xl text-[10px]">許可する</button>
-                    </div>
-                </label>
+                <input type="password" id="nasa-key" placeholder="NASA API Key (DEMO_KEY)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                <input type="password" id="gemini-key" placeholder="Gemini API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                <div class="flex gap-2">
+                    <input type="time" id="notify-time" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none">
+                    <button onclick="requestNotificationPermission()" id="btn-perm" class="px-4 bg-gray-800 rounded-xl text-[10px] font-bold">通知許可</button>
+                </div>
             </div>
-            <button onclick="saveKeys()"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all text-sm mt-2">保存して更新</button>
+            <button onclick="saveKeys()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
         </div>
 
-        <!-- Image Preview -->
-        <div id="image-container" class="relative">
-            <div id="skeleton-img" class="w-full aspect-[9/16] rounded-3xl loading-shimmer hidden"></div>
-            <img id="apod-img"
-                class="w-full h-auto min-h-[300px] rounded-3xl object-cover shadow-2xl transition-opacity duration-700 opacity-0"
-                alt="APOD Image">
-            <div id="media-error"
-                class="hidden absolute inset-0 flex items-center justify-center text-center p-6 text-sm text-gray-400 glass rounded-3xl">
-                本日のコンテンツは画像ではありません。<br>（動画等の可能性があります）
-            </div>
+        <div id="image-container" class="relative group">
+            <div id="skeleton-img" class="w-full aspect-[9/16] rounded-[2.5rem] loading-shimmer hidden"></div>
+            <img id="apod-img" class="w-full h-auto min-h-[300px] rounded-[2.5rem] object-cover shadow-2xl transition-opacity duration-1000 opacity-0" alt="APOD">
+            <div id="media-error" class="hidden absolute inset-0 flex items-center justify-center text-center p-8 text-sm text-gray-400 glass rounded-[2.5rem]">本日のコンテンツは静止画ではありません</div>
         </div>
 
-        <!-- Info Card -->
-        <div class="glass rounded-3xl p-6 space-y-4">
-            <div id="skeleton-text" class="space-y-3 hidden">
-                <div class="h-6 w-3/4 loading-shimmer rounded"></div>
-                <div class="h-4 w-full loading-shimmer rounded"></div>
-                <div class="h-4 w-5/6 loading-shimmer rounded"></div>
-            </div>
-
+        <div class="glass rounded-[2.5rem] p-8 space-y-4">
+            <div id="skeleton-text" class="space-y-4 hidden"><div class="h-8 w-3/4 loading-shimmer rounded-lg"></div><div class="h-4 w-full loading-shimmer rounded-lg"></div></div>
             <div id="info-content">
-                <h2 id="apod-title" class="text-lg font-semibold text-white leading-tight mb-1"></h2>
-                <p id="apod-date" class="text-[10px] font-medium text-blue-400 uppercase tracking-widest mb-4"></p>
+                <h2 id="apod-title" class="text-xl font-bold text-white leading-tight mb-1"></h2>
+                <p id="apod-date" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-6"></p>
                 <div id="explanation-container" class="space-y-4">
-                    <p id="explanation-ja" class="text-sm leading-relaxed text-gray-300"></p>
-                    <details class="text-[10px] text-gray-500">
-                        <summary class="cursor-pointer hover:text-gray-400 transition">Show Original (English)</summary>
-                        <p id="explanation-en" class="mt-2 leading-relaxed italic border-l border-white/10 pl-3"></p>
+                    <p id="explanation-ja" class="text-sm leading-relaxed text-gray-300 font-medium">宇宙の彼方からデータを取得中...</p>
+                    <div id="error-display" class="hidden text-[10px] text-red-400 bg-red-950/30 p-3 rounded-lg border border-red-900/50"></div>
+                    <details class="text-[10px] text-gray-600 group">
+                        <summary class="cursor-pointer hover:text-gray-400 transition list-none flex items-center gap-1">Original Description</summary>
+                        <p id="explanation-en" class="mt-3 leading-relaxed italic border-l border-white/5 pl-4 py-1 text-gray-500"></p>
                     </details>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- Action Bar -->
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md flex gap-3 z-50">
-        <button id="btn-download" onclick="downloadImage()"
-            class="flex-1 bg-white text-black font-bold py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            保存
-        </button>
-        <button id="btn-wallpaper" onclick="triggerWallpaper()"
-            class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-                <path d="M12 18h.01" />
-            </svg>
-            壁紙に
-        </button>
+    <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md flex gap-3 z-50">
+        <button onclick="downloadImage()" class="flex-1 bg-white text-black font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm">保存</button>
+        <button onclick="triggerWallpaper()" class="flex-1 bg-indigo-600 text-white font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm tracking-widest">壁紙に設定</button>
     </nav>
 
-    <!-- Toast -->
-    <div id="toast"
-        class="fixed bottom-28 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-white text-black text-xs font-bold opacity-0 transition-opacity pointer-events-none z-50 shadow-2xl">
-    </div>
+    <div id="toast" class="fixed bottom-36 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl translate-y-4"></div>
 
     <script>
-        const STORAGE = {
-            NASA: 'apod_nasa_key',
-            GEMINI: 'apod_gemini_key',
-            TIME: 'apod_notify_time'
-        };
-
+        const STORAGE = { NASA: 'apod_nasa_key', GEMINI: 'apod_gemini_key', TIME: 'apod_notify_time' };
         let currentImgUrl = '';
 
         window.onload = () => {
             const nKey = localStorage.getItem(STORAGE.NASA);
             const gKey = localStorage.getItem(STORAGE.GEMINI);
-            const nTime = localStorage.getItem(STORAGE.TIME);
-
-            if (nTime) document.getElementById('notify-time').value = nTime;
-
-            if (!nKey || !gKey) {
-                document.getElementById('config-section').classList.remove('hidden');
-            } else {
-                fetchApod(nKey, gKey);
-            }
-
-            // 通知チェックの開始
-            setInterval(checkNotification, 30000); // 30秒ごとにチェック
+            if (localStorage.getItem(STORAGE.TIME)) document.getElementById('notify-time').value = localStorage.getItem(STORAGE.TIME);
+            if (!nKey || !gKey) { document.getElementById('config-section').classList.remove('hidden'); }
+            else { fetchApod(nKey, gKey); }
         };
 
-        function toggleConfig() {
-            const section = document.getElementById('config-section');
-            section.classList.toggle('hidden');
-        }
-
-        async function requestNotificationPermission() {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                showToast('通知が許可されました');
-                document.getElementById('btn-perm').textContent = '許可済み';
-                document.getElementById('btn-perm').classList.replace('bg-gray-800', 'bg-green-900');
-            }
-        }
+        function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
 
         function saveKeys() {
             const n = document.getElementById('nasa-key').value || 'DEMO_KEY';
             const g = document.getElementById('gemini-key').value;
-            const t = document.getElementById('notify-time').value;
-
-            if (!g) return showToast('Gemini API Keyが必要です');
-
+            if (!g) return showToast('Gemini APIキーが必要です');
             localStorage.setItem(STORAGE.NASA, n);
             localStorage.setItem(STORAGE.GEMINI, g);
-            localStorage.setItem(STORAGE.TIME, t);
-
-            showToast('設定を保存しました');
-            setTimeout(() => location.reload(), 1000);
+            localStorage.setItem(STORAGE.TIME, document.getElementById('notify-time').value);
+            location.reload();
         }
 
         async function fetchApod(nasaKey, geminiKey) {
             toggleLoading(true);
             try {
-                const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasaKey}`);
-                const data = await response.json();
-
+                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasaKey}`);
+                const data = await res.json();
                 if (data.media_type !== 'image') {
                     document.getElementById('media-error').classList.remove('hidden');
-                    document.getElementById('btn-download').style.display = 'none';
-                    document.getElementById('btn-wallpaper').style.display = 'none';
                     return;
                 }
-
                 currentImgUrl = data.hdurl || data.url;
                 const img = document.getElementById('apod-img');
                 img.src = currentImgUrl;
                 img.onload = () => img.classList.add('opacity-100');
-
                 document.getElementById('apod-title').textContent = data.title;
                 document.getElementById('apod-date').textContent = data.date;
                 document.getElementById('explanation-en').textContent = data.explanation;
-
                 translateText(data.explanation, geminiKey);
-            } catch (err) {
-                showToast('データの取得に失敗しました');
-            } finally {
-                toggleLoading(false);
-            }
+            } catch (err) { showToast('NASA通信エラー'); }
+            finally { toggleLoading(false); }
         }
 
         async function translateText(text, apiKey) {
-            const prompt = `Translate this APOD astronomical explanation into helpful, natural Japanese. Make it easy for a mobile wallpaper user to understand. Text:\n${text}`;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${apiKey}`;
+            // 2026年最新の gemini-3.0-flash を使用
+            const model = "gemini-3.0-flash";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const prompt = `宇宙の美しさを伝える情緒的な翻訳をしてください。スマホ壁紙の解説として、短く読みやすく、好奇心を刺激する日本語にまとめて。本文:\n${text}`;
 
             try {
                 const res = await fetch(url, {
@@ -256,66 +131,47 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
                 document.getElementById('explanation-ja').textContent = data.candidates[0].content.parts[0].text;
             } catch (e) {
-                document.getElementById('explanation-ja').textContent = "翻訳に失敗しました。原文をご確認ください。";
+                const errBox = document.getElementById('error-display');
+                errBox.textContent = `API Error: ${e.message}`;
+                errBox.classList.remove('hidden');
+                document.getElementById('explanation-ja').textContent = "翻訳できませんでした。設定を確認してください。";
             }
         }
 
-        function checkNotification() {
-            const savedTime = localStorage.getItem(STORAGE.TIME);
-            if (!savedTime || Notification.permission !== 'granted') return;
-
-            const now = new Date();
-            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-            // 最後に通知した日付をチェックして多重通知防止
-            const lastNotified = localStorage.getItem('last_notified_date');
-            const today = now.toDateString();
-
-            if (currentTime === savedTime && lastNotified !== today) {
-                new Notification('APOD Wall-Supporter', {
-                    body: '今日の宇宙写真が届きました！壁紙をチェックしましょう。',
-                    icon: '/favicon.ico'
-                });
-                localStorage.setItem('last_notified_date', today);
-            }
-        }
-
-        function downloadImage() {
+        async function downloadImage() {
             if (!currentImgUrl) return;
-            const link = document.createElement('a');
-            link.href = currentImgUrl;
-            link.download = `APOD-${new Date().toISOString().split('T')[0]}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('画像を保存しました');
+            showToast('画像を生成中...');
+            try {
+                const response = await fetch(currentImgUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url;
+                a.download = `APOD-${new Date().toISOString().split('T')[0]}.jpg`;
+                a.click();
+                showToast('保存しました ✨');
+            } catch (e) { window.open(currentImgUrl, '_blank'); }
         }
 
-        function triggerWallpaper() {
-            showToast('保存して壁紙設定へ導きます...');
-            setTimeout(() => {
-                downloadImage();
-                showToast('写真アプリから壁紙に設定してください');
-            }, 1000);
-        }
-
+        function triggerWallpaper() { showToast('保存した画像を壁紙に設定してください'); downloadImage(); }
         function toggleLoading(isLoading) {
-            const sImg = document.getElementById('skeleton-img');
-            const sText = document.getElementById('skeleton-text');
-            const info = document.getElementById('info-content');
-            if (isLoading) { sImg.classList.remove('hidden'); sText.classList.remove('hidden'); info.classList.add('hidden'); }
-            else { sImg.classList.add('hidden'); sText.classList.add('hidden'); info.classList.remove('hidden'); }
+            document.getElementById('skeleton-img').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('skeleton-text').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('info-content').style.display = isLoading ? 'none' : 'block';
         }
-
         function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.remove('opacity-0');
-            setTimeout(() => t.classList.add('opacity-0'), 3000);
+            const t = document.getElementById('toast'); t.textContent = msg;
+            t.classList.remove('opacity-0', 'translate-y-4');
+            setTimeout(() => t.classList.add('opacity-0', 'translate-y-4'), 3000);
+        }
+        async function requestNotificationPermission() {
+            if (await Notification.requestPermission() === 'granted') {
+                showToast('通知を許可しました');
+                document.getElementById('btn-perm').textContent = '許可済';
+            }
         }
     </script>
 </body>
-
 </html>
