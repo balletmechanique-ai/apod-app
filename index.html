@@ -136,15 +136,27 @@
     </div>
 
     <script>
-        const STORAGE = { NASA: 'apod_nasa_key', GEMINI: 'apod_gemini_key', TIME: 'apod_notify_time' };
+        const STORAGE = {
+            NASA: 'apod_nasa_key',
+            GEMINI: 'apod_gemini_key',
+            TIME: 'apod_notify_time',
+            LAST_NOTIFY: 'apod_last_notify_ymd'
+        };
+        const NOTIFY_ICON = 'https://cdn-icons-png.flaticon.com/512/2626/2626293.png';
         let currentImgUrl = '';
+        let notifyIntervalId = null;
 
         window.onload = () => {
             const nKey = localStorage.getItem(STORAGE.NASA);
             const gKey = localStorage.getItem(STORAGE.GEMINI);
             if (localStorage.getItem(STORAGE.TIME)) document.getElementById('notify-time').value = localStorage.getItem(STORAGE.TIME);
+            if (Notification.permission === 'granted') document.getElementById('btn-perm').textContent = '許可済';
             if (!nKey || !gKey) { document.getElementById('config-section').classList.remove('hidden'); }
             else { fetchApod(nKey, gKey); }
+            startNotificationScheduler();
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') tickDailyNotification();
+            });
         };
 
         function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
@@ -242,10 +254,47 @@ ${text}`;
             t.classList.remove('opacity-0', 'translate-y-4');
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-4'), 3000);
         }
+        function getScheduledHourMinute() {
+            const raw = localStorage.getItem(STORAGE.TIME);
+            if (!raw || !raw.includes(':')) return null;
+            const [h, m] = raw.split(':').map((x) => parseInt(x, 10));
+            if (Number.isNaN(h) || Number.isNaN(m)) return null;
+            return { h, m };
+        }
+
+        function tickDailyNotification() {
+            if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+            const hm = getScheduledHourMinute();
+            if (!hm) return;
+            const now = new Date();
+            if (now.getHours() !== hm.h || now.getMinutes() !== hm.m) return;
+            const ymd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            if (localStorage.getItem(STORAGE.LAST_NOTIFY) === ymd) return;
+            localStorage.setItem(STORAGE.LAST_NOTIFY, ymd);
+            try {
+                new Notification('APOD Wall-Supporter', {
+                    body: '今日の NASA APOD をチェックしましょう',
+                    icon: NOTIFY_ICON,
+                    tag: `apod-${ymd}`
+                });
+            } catch (e) { /* ignore */ }
+        }
+
+        function startNotificationScheduler() {
+            if (notifyIntervalId != null) clearInterval(notifyIntervalId);
+            tickDailyNotification();
+            notifyIntervalId = setInterval(tickDailyNotification, 30 * 1000);
+        }
+
         async function requestNotificationPermission() {
+            if (typeof Notification === 'undefined') {
+                showToast('この環境は通知に対応していません');
+                return;
+            }
             if (await Notification.requestPermission() === 'granted') {
                 showToast('通知を許可しました');
                 document.getElementById('btn-perm').textContent = '許可済';
+                startNotificationScheduler();
             }
         }
     </script>
