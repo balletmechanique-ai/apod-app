@@ -162,8 +162,10 @@
         function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
 
         function saveKeys() {
-            const n = document.getElementById('nasa-key').value || 'DEMO_KEY';
-            const g = document.getElementById('gemini-key').value;
+            const nInput = document.getElementById('nasa-key').value.trim();
+            const gInput = document.getElementById('gemini-key').value.trim();
+            const n = nInput || localStorage.getItem(STORAGE.NASA) || 'DEMO_KEY';
+            const g = gInput || localStorage.getItem(STORAGE.GEMINI);
             if (!g) return showToast('Gemini APIキーが必要です');
             localStorage.setItem(STORAGE.NASA, n);
             localStorage.setItem(STORAGE.GEMINI, g);
