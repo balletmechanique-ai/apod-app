@@ -225,7 +225,7 @@ ${text}`;
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url;
-                a.download = `APOD-${new Date().toISOString().split('T')[0]}.jpg`;
+                a.download = `NASA-APOD.jpg`;
                 a.click();
                 showToast('保存しました ✨');
             } catch (e) { window.open(currentImgUrl, '_blank'); }
