@@ -1,65 +1,123 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APOD Wall-Supporter</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjI2LzI2MjYyOTMucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+    <link rel="manifest"
+        href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjI2LzI2MjYyOTMucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e0e0e0; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .loading-shimmer { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        ::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e0e0e0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col items-center p-4 pb-32">
 
     <header class="w-full max-w-md py-6 flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">APOD Wall-Supporter</h1>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
+                APOD Wall-Supporter</h1>
             <p class="text-[10px] text-gray-600 tracking-widest uppercase font-bold">balletmechanique-ai</p>
         </div>
         <button onclick="toggleConfig()" class="p-2 glass rounded-full text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
         </button>
     </header>
 
     <main id="app" class="w-full max-w-md space-y-6">
         <div id="config-section" class="glass rounded-3xl p-6 space-y-4 hidden absolute inset-x-4 top-20 z-[60]">
-            <div class="flex justify-between items-center"><h2 class="text-sm font-bold text-gray-300">Settings</h2><button onclick="toggleConfig()" class="text-gray-500 text-2xl">&times;</button></div>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-gray-300">Settings</h2><button onclick="toggleConfig()"
+                    class="text-gray-500 text-2xl">&times;</button>
+            </div>
             <div class="space-y-3">
-                <input type="password" id="nasa-key" placeholder="NASA API Key (DEMO_KEY)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-                <input type="password" id="gemini-key" placeholder="Gemini API Key" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                <input type="password" id="nasa-key" placeholder="NASA API Key (DEMO_KEY)"
+                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                <input type="password" id="gemini-key" placeholder="Gemini API Key"
+                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
                 <div class="flex gap-2">
-                    <input type="time" id="notify-time" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none">
-                    <button onclick="requestNotificationPermission()" id="btn-perm" class="px-4 bg-gray-800 rounded-xl text-[10px] font-bold">通知許可</button>
+                    <input type="time" id="notify-time"
+                        class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none">
+                    <button onclick="requestNotificationPermission()" id="btn-perm"
+                        class="px-4 bg-gray-800 rounded-xl text-[10px] font-bold">通知許可</button>
                 </div>
             </div>
-            <button onclick="saveKeys()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
+            <button onclick="saveKeys()"
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
         </div>
 
         <div id="image-container" class="relative group">
             <div id="skeleton-img" class="w-full aspect-[9/16] rounded-[2.5rem] loading-shimmer hidden"></div>
-            <img id="apod-img" class="w-full h-auto min-h-[300px] rounded-[2.5rem] object-cover shadow-2xl transition-opacity duration-1000 opacity-0" alt="APOD">
-            <div id="media-error" class="hidden absolute inset-0 flex items-center justify-center text-center p-8 text-sm text-gray-400 glass rounded-[2.5rem]">本日のコンテンツは静止画ではありません</div>
+            <img id="apod-img"
+                class="w-full h-auto min-h-[300px] rounded-[2.5rem] object-cover shadow-2xl transition-opacity duration-1000 opacity-0"
+                alt="APOD">
+            <div id="media-error"
+                class="hidden absolute inset-0 flex items-center justify-center text-center p-8 text-sm text-gray-400 glass rounded-[2.5rem]">
+                本日のコンテンツは静止画ではありません</div>
         </div>
 
         <div class="glass rounded-[2.5rem] p-8 space-y-4">
-            <div id="skeleton-text" class="space-y-4 hidden"><div class="h-8 w-3/4 loading-shimmer rounded-lg"></div><div class="h-4 w-full loading-shimmer rounded-lg"></div></div>
+            <div id="skeleton-text" class="space-y-4 hidden">
+                <div class="h-8 w-3/4 loading-shimmer rounded-lg"></div>
+                <div class="h-4 w-full loading-shimmer rounded-lg"></div>
+            </div>
             <div id="info-content">
                 <h2 id="apod-title" class="text-xl font-bold text-white leading-tight mb-1"></h2>
                 <p id="apod-date" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-6"></p>
                 <div id="explanation-container" class="space-y-4">
-                    <p id="explanation-ja" class="text-sm leading-relaxed text-gray-300 font-medium">宇宙の彼方からデータを取得中...</p>
-                    <div id="error-display" class="hidden text-[10px] text-red-400 bg-red-950/30 p-3 rounded-lg border border-red-900/50"></div>
+                    <p id="explanation-ja" class="text-sm leading-relaxed text-gray-300 font-medium">宇宙の彼方からデータを取得中...
+                    </p>
+                    <div id="error-display"
+                        class="hidden text-[10px] text-red-400 bg-red-950/30 p-3 rounded-lg border border-red-900/50">
+                    </div>
                     <details class="text-[10px] text-gray-600 group">
-                        <summary class="cursor-pointer hover:text-gray-400 transition list-none flex items-center gap-1">Original Description</summary>
-                        <p id="explanation-en" class="mt-3 leading-relaxed italic border-l border-white/5 pl-4 py-1 text-gray-500"></p>
+                        <summary
+                            class="cursor-pointer hover:text-gray-400 transition list-none flex items-center gap-1">
+                            Original Description</summary>
+                        <p id="explanation-en"
+                            class="mt-3 leading-relaxed italic border-l border-white/5 pl-4 py-1 text-gray-500"></p>
                     </details>
                 </div>
             </div>
@@ -67,11 +125,15 @@
     </main>
 
     <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md flex gap-3 z-50">
-        <button onclick="downloadImage()" class="flex-1 bg-white text-black font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm">保存</button>
-        <button onclick="triggerWallpaper()" class="flex-1 bg-indigo-600 text-white font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm tracking-widest">壁紙に設定</button>
+        <button onclick="downloadImage()"
+            class="flex-1 bg-white text-black font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm">保存</button>
+        <button onclick="triggerWallpaper()"
+            class="flex-1 bg-indigo-600 text-white font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm tracking-widest">壁紙に設定</button>
     </nav>
 
-    <div id="toast" class="fixed bottom-36 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl translate-y-4"></div>
+    <div id="toast"
+        class="fixed bottom-36 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl translate-y-4">
+    </div>
 
     <script>
         const STORAGE = { NASA: 'apod_nasa_key', GEMINI: 'apod_gemini_key', TIME: 'apod_notify_time' };
@@ -119,8 +181,7 @@
         }
 
         async function translateText(text, apiKey) {
-            // 2026年最新の gemini-3-flash を使用
-            const model = "gemini-3-flash";
+            const model = "gemini-3-flash-preview";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const prompt = `宇宙の美しさを伝える情緒的な翻訳をしてください。スマホ壁紙の解説として、短く読みやすく、好奇心を刺激する日本語にまとめて。本文:\n${text}`;
 
@@ -174,4 +235,5 @@
         }
     </script>
 </body>
+
 </html>
