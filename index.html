@@ -183,22 +183,37 @@
         async function translateText(text, apiKey) {
             const model = "gemini-3-flash-preview";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const prompt = `宇宙の美しさを伝える情緒的な翻訳をしてください。スマホ壁紙の解説として、短く読みやすく、好奇心を刺激する日本語にまとめて。本文:\n${text}`;
+            const prompt = `NASAの宇宙解説を日本語に翻訳してください。
+【制約事項】
+・Markdown記法（#や*など）は一切使わず、プレーンテキストで出力してください。
+・「はい、翻訳しました」などの挨拶や前置き、解説は一切不要です。翻訳結果のみを出力してください。
+・スマホの壁紙解説として読みやすい、自然で親しみやすい日本語にしてください。
+
+原文:
+${text}`;
 
             try {
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        // 生成パラメータを追加して、より直接的な回答を促す
+                        generationConfig: {
+                            temperature: 0.2, // 低めに設定して余計なアドリブを抑える
+                            topP: 0.8
+                        }
+                    })
                 });
+
                 const data = await res.json();
-                if (data.error) throw new Error(data.error.message);
-                document.getElementById('explanation-ja').textContent = data.candidates[0].content.parts[0].text;
+                const translatedText = data.candidates[0].content.parts[0].text;
+
+                // 念のため、AIが最後につけてしまうかもしれない改行などをトリミング
+                document.getElementById('explanation-ja').textContent = translatedText.trim();
+
             } catch (e) {
-                const errBox = document.getElementById('error-display');
-                errBox.textContent = `API Error: ${e.message}`;
-                errBox.classList.remove('hidden');
-                document.getElementById('explanation-ja').textContent = "翻訳できませんでした。設定を確認してください。";
+                document.getElementById('explanation-ja').textContent = "翻訳に失敗しました。";
             }
         }
 
