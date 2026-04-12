@@ -181,15 +181,15 @@
         }
 
         async function translateText(text, apiKey) {
-            const model = "gemini-3-flash-preview";
+            const model = "Gemini 3.1 Flash-Lite";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const prompt = `NASAの宇宙解説を日本語に翻訳してください。
-【制約事項】
-・Markdown記法（#や*など）は一切使わず、プレーンテキストで出力してください。
-・「はい、翻訳しました」などの挨拶や前置き、解説は一切不要です。翻訳結果のみを出力してください。
-・スマホの壁紙解説として読みやすい、自然で親しみやすい日本語にしてください。
+            const prompt = `Translate to natural Japanese. 
+Rules: 
+- Plain text only (No Markdown, No #, No *). 
+- Output ONLY the translation. 
+- No intro/outro text.
 
-原文:
+Text:
 ${text}`;
 
             try {
