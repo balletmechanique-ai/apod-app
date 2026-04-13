@@ -175,9 +175,31 @@
 
         async function fetchApod(nasaKey, geminiKey) {
             toggleLoading(true);
+            const errEl = document.getElementById('error-display');
+            errEl.classList.add('hidden');
+            errEl.textContent = '';
             try {
-                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasaKey}`);
-                const data = await res.json();
+                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(nasaKey)}`);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    const msg = data.error?.message || data.msg || `HTTP ${res.status}`;
+                    const isDemo = String(nasaKey).toUpperCase() === 'DEMO_KEY';
+                    const hint = res.status === 429 && isDemo
+                        ? '（DEMO_KEY は時間あたりの上限が厳しいです。本番用の NASA API キーへの切り替えを検討してください）'
+                        : '';
+                    errEl.textContent = `NASA API: ${msg}${hint}`;
+                    errEl.classList.remove('hidden');
+                    document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
+                    showToast('NASA API エラー');
+                    return;
+                }
+                if (data.code || data.error) {
+                    errEl.textContent = `NASA API: ${data.error || data.msg || data.code}`;
+                    errEl.classList.remove('hidden');
+                    document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
+                    showToast('NASA API エラー');
+                    return;
+                }
                 if (data.media_type !== 'image') {
                     document.getElementById('media-error').classList.remove('hidden');
                     return;
@@ -189,14 +211,25 @@
                 document.getElementById('apod-title').textContent = data.title;
                 document.getElementById('apod-date').textContent = data.date;
                 document.getElementById('explanation-en').textContent = data.explanation;
-                translateText(data.explanation, geminiKey);
-            } catch (err) { showToast('NASA通信エラー'); }
-            finally { toggleLoading(false); }
+                await translateText(data.explanation, geminiKey);
+            } catch (err) {
+                errEl.textContent = `接続エラー: ${err.message || String(err)}（file:// で開いているとブラウザが API をブロックすることがあります。ローカルサーバー経由で開いてください）`;
+                errEl.classList.remove('hidden');
+                document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
+                showToast('NASA通信エラー');
+            } finally { toggleLoading(false); }
         }
 
+        /**
+         * REST では models/{model} のモデルコードが必須（「Gemini 3.1 Flash-Lite」などの表示名は不可）。
+         * gemini-2.0-* は非推奨。翻訳用途は 3.1 Flash-Lite プレビューが公式に推奨。
+         * @see https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-lite-preview
+         */
+        const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
+
         async function translateText(text, apiKey) {
-            const model = "Gemini 3.1 Flash-Lite";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const jaEl = document.getElementById('explanation-ja');
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TRANSLATE_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
             const prompt = `Translate to natural Japanese. 
 Rules: 
 - Plain text only (No Markdown, No #, No *). 
@@ -212,23 +245,34 @@ ${text}`;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        // 生成パラメータを追加して、より直接的な回答を促す
                         generationConfig: {
-                            temperature: 0.2, // 低めに設定して余計なアドリブを抑える
+                            temperature: 0.2,
                             topP: 0.8
                         }
                     })
                 });
 
                 const data = await res.json();
-                const translatedText = data.candidates[0].content.parts[0].text;
-
-                // 念のため、AIが最後につけてしまうかもしれない改行などをトリミング
-                document.getElementById('explanation-ja').textContent = translatedText.trim();
-
+                if (!res.ok) {
+                    const detail = data.error?.message || JSON.stringify(data.error || data);
+                    jaEl.textContent = fallbackJaFromEn(text, `Gemini API エラー: ${detail}`);
+                    return;
+                }
+                const part = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!part) {
+                    const block = data.promptFeedback?.blockReason || data.candidates?.[0]?.finishReason;
+                    jaEl.textContent = fallbackJaFromEn(text, block ? `応答なし（${block}）` : '応答の形式が不正です');
+                    return;
+                }
+                jaEl.textContent = part.trim();
             } catch (e) {
-                document.getElementById('explanation-ja').textContent = "翻訳に失敗しました。";
+                jaEl.textContent = fallbackJaFromEn(text, e.message || String(e));
             }
+        }
+
+        /** 翻訳が使えないときも本文を読めるように、英語をそのまま表示（先頭に短い注記） */
+        function fallbackJaFromEn(explanationEn, reason) {
+            return `【自動翻訳をスキップ: ${reason}】\n\n${explanationEn}`;
         }
 
         async function downloadImage() {
