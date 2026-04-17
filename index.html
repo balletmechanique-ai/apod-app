@@ -7,7 +7,7 @@
     <title>APOD Wall-Supporter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest"
-        href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zNjUzLzM2NTM0NjIucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9LAogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI2MjYvMjYyNjI5My5wbmciLAogICAgICAidHlwZSI6ICJpbWAGEvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+        href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zNjUzLzM2NTM0NjIucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9LAogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI2MjYvMjYyNjI5My5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIKICAgIH0KICBdCn0=">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3653/3653462.png">
@@ -122,6 +122,11 @@
         const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
 
         window.onload = () => {
+            // Service Workerの登録 (AndroidでのPWA化に必須)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(() => { /* ignore */ });
+            }
+
             const nKey = localStorage.getItem(STORAGE.NASA);
             const gKey = localStorage.getItem(STORAGE.GEMINI);
             if (!nKey || !gKey) { 
