@@ -17,29 +17,8 @@
     <link rel="icon" type="image/png" sizes="512x512" href="https://img.icons8.com/fluency/512/rocket.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/rocket.png">
     
-    <!-- Manifest (Inline for better reliability) -->
-    <link rel="manifest" href='data:application/json,{
-        "name": "APOD Wall-Supporter",
-        "short_name": "APOD",
-        "display": "standalone",
-        "start_url": ".",
-        "background_color": "#050505",
-        "theme_color": "#050505",
-        "icons": [
-            {
-                "src": "https://img.icons8.com/fluency/512/rocket.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any"
-            },
-            {
-                "src": "https://img.icons8.com/fluency/512/rocket.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "maskable"
-            }
-        ]
-    }'>
+    <!-- Manifest (More robust JSON format) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"APOD Wall-Supporter","short_name":"APOD","display":"standalone","start_url":".","background_color":"#050505","theme_color":"#050505","icons":[{"src":"https://img.icons8.com/fluency/512/rocket.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"https://img.icons8.com/fluency/512/rocket.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}'>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -152,9 +131,14 @@
         const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
 
         window.onload = () => {
-            // Service Worker Register (Required for PWA on Android)
+            // Service Worker Register (Critical for PWA recognition)
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => { /* ignore */ });
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => {
+                    // Force update if script changes
+                    reg.update();
+                })
+                .catch(() => { /* ignore */ });
             }
 
             const nKey = localStorage.getItem(STORAGE.NASA);
