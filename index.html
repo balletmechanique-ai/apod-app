@@ -13,12 +13,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
     
-    <!-- Icons -->
+    <!-- Icons: リンク切れやキャッシュを防ぐため複数のタグを記述 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="https://img.icons8.com/fluency/192/rocket.png">
     <link rel="icon" type="image/png" sizes="512x512" href="https://img.icons8.com/fluency/512/rocket.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/rocket.png">
     
-    <!-- 外部ファイル化してブラウザの認識を安定させる -->
-    <link rel="manifest" href="manifest.json">
+    <!-- manifest.jsonの後にクエリをつけて強制更新を促す -->
+    <link rel="manifest" href="manifest.json?v=2">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -82,7 +83,11 @@
 
         window.onload = () => {
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').then(reg => reg.update()).catch(() => {});
+                // Service Workerを強制的に更新させる
+                navigator.serviceWorker.register('sw.js?v=2').then(reg => {
+                    reg.update();
+                    console.log('SW registered');
+                }).catch(err => console.log('SW error:', err));
             }
             const nKey = localStorage.getItem(STORAGE.NASA);
             const gKey = localStorage.getItem(STORAGE.GEMINI);
