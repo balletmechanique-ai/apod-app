@@ -6,11 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APOD Wall-Supporter</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest"
-        href="data:application/json;base64,ewogICJuYW1lIjogIkFQT0QgV2FsbC1TdXBwb3J0ZXIiLAogICJzaG9ydF9uYW1lIjogIkFQT0QiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzA1MDUwNSIsCiAgInRoZW1lX2NvbG9yIjogIiMwNTA1MDUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8zNjUzLzM2NTM0NjIucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9LAogICAgewogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzI2MjYvMjYyNjI5My5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIKICAgIH0KICBdCn0=">
+    
+    <!-- PWA Settings -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3653/3653462.png">
+    <meta name="theme-color" content="#050505">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="512x512" href="https://img.icons8.com/fluency/512/rocket.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/rocket.png">
+    
+    <!-- Manifest (Inline for better reliability) -->
+    <link rel="manifest" href='data:application/json,{
+        "name": "APOD Wall-Supporter",
+        "short_name": "APOD",
+        "display": "standalone",
+        "start_url": ".",
+        "background_color": "#050505",
+        "theme_color": "#050505",
+        "icons": [
+            {
+                "src": "https://img.icons8.com/fluency/512/rocket.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any"
+            },
+            {
+                "src": "https://img.icons8.com/fluency/512/rocket.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable"
+            }
+        ]
+    }'>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
@@ -122,7 +152,7 @@
         const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
 
         window.onload = () => {
-            // Service Workerの登録 (AndroidでのPWA化に必須)
+            // Service Worker Register (Required for PWA on Android)
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').catch(() => { /* ignore */ });
             }
