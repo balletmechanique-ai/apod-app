@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="https://img.icons8.com/fluency/512/rocket.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/rocket.png">
     
-    <!-- Manifest (More robust JSON format) -->
+    <!-- Manifest: 直接記述することで解析エラーを回避 -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"APOD Wall-Supporter","short_name":"APOD","display":"standalone","start_url":".","background_color":"#050505","theme_color":"#050505","icons":[{"src":"https://img.icons8.com/fluency/512/rocket.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"https://img.icons8.com/fluency/512/rocket.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}'>
 
     <style>
@@ -69,6 +69,7 @@
     </header>
 
     <main id="app" class="w-full max-w-md space-y-6">
+        <!-- 設定セクション -->
         <div id="config-section" class="glass rounded-3xl p-6 space-y-4 hidden absolute inset-x-4 top-20 z-[60]">
             <div class="flex justify-between items-center">
                 <h2 class="text-sm font-bold text-gray-300">Settings</h2>
@@ -84,6 +85,7 @@
                 class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
         </div>
 
+        <!-- 画像表示 -->
         <div id="image-container" class="relative group">
             <div id="skeleton-img" class="w-full aspect-[9/16] rounded-[2.5rem] loading-shimmer hidden"></div>
             <img id="apod-img"
@@ -94,6 +96,7 @@
                 本日のコンテンツは静止画ではありません</div>
         </div>
 
+        <!-- 情報セクション -->
         <div class="glass rounded-[2.5rem] p-8 space-y-4">
             <div id="skeleton-text" class="space-y-4 hidden">
                 <div class="h-8 w-3/4 loading-shimmer rounded-lg"></div>
@@ -131,14 +134,11 @@
         const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
 
         window.onload = () => {
-            // Service Worker Register (Critical for PWA recognition)
+            // Service Workerの登録 (Android PWA化の必須条件)
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js')
-                .then(reg => {
-                    // Force update if script changes
-                    reg.update();
-                })
-                .catch(() => { /* ignore */ });
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    reg.update(); // 常に最新をチェック
+                }).catch(() => { /* ignore */ });
             }
 
             const nKey = localStorage.getItem(STORAGE.NASA);
