@@ -247,6 +247,17 @@
 
             const gKey = localStorage.getItem(STORAGE.GEMINI);
 
+            const nasaInput = document.getElementById('nasa-key');
+            const geminiInput = document.getElementById('gemini-key');
+
+            if (nKey) nasaInput.value = nKey;
+            if (gKey) geminiInput.value = gKey;
+
+            nasaInput.addEventListener('change', () => persistConfigKeys());
+            geminiInput.addEventListener('change', () => persistConfigKeys());
+            nasaInput.addEventListener('keydown', handleConfigEnterKey);
+            geminiInput.addEventListener('keydown', handleConfigEnterKey);
+
             if (!nKey || !gKey) { document.getElementById('config-section').classList.remove('hidden'); }
 
             else { fetchApod(nKey, gKey); }
@@ -255,7 +266,43 @@
 
 
 
-        function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
+        function toggleConfig() {
+
+            const configEl = document.getElementById('config-section');
+            const isOpen = !configEl.classList.contains('hidden');
+
+            if (isOpen) applyConfig();
+
+            configEl.classList.toggle('hidden');
+        }
+
+        function handleConfigEnterKey(e) {
+
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            applyConfig(true);
+            document.getElementById('config-section').classList.add('hidden');
+        }
+
+        function persistConfigKeys() {
+
+            const nInput = document.getElementById('nasa-key').value.trim();
+            const gInput = document.getElementById('gemini-key').value.trim();
+            const n = nInput || localStorage.getItem(STORAGE.NASA) || 'DEMO_KEY';
+
+            localStorage.setItem(STORAGE.NASA, n);
+            if (gInput) localStorage.setItem(STORAGE.GEMINI, gInput);
+
+            return { n, g: gInput || localStorage.getItem(STORAGE.GEMINI) };
+        }
+
+        function applyConfig(showSavedToast = false) {
+
+            const { n, g } = persistConfigKeys();
+            if (!g) return;
+            if (showSavedToast) showToast('APIキーを保存しました');
+            fetchApod(n, g);
+        }
 
 
 
