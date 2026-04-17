@@ -148,20 +148,7 @@
                 <input type="password" id="gemini-key" placeholder="Gemini API Key"
                     class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
 
-                <div class="flex gap-2">
-
-                    <input type="time" id="notify-time"
-                        class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none">
-
-                    <button onclick="requestNotificationPermission()" id="btn-perm"
-                        class="px-4 bg-gray-800 rounded-xl text-[10px] font-bold">通知許可</button>
-
-                </div>
-
             </div>
-
-            <button onclick="saveKeys()"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
 
         </div>
 
@@ -233,18 +220,6 @@
 
 
 
-    <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md flex gap-3 z-50">
-
-        <button onclick="downloadImage()"
-            class="flex-1 bg-white text-black font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm">保存</button>
-
-        <button onclick="triggerWallpaper()"
-            class="flex-1 bg-indigo-600 text-white font-black py-5 rounded-3xl shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm tracking-widest">壁紙に設定</button>
-
-    </nav>
-
-
-
     <div id="toast"
         class="fixed bottom-36 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl translate-y-4">
 
@@ -258,19 +233,11 @@
 
             NASA: 'apod_nasa_key',
 
-            GEMINI: 'apod_gemini_key',
-
-            TIME: 'apod_notify_time',
-
-            LAST_NOTIFY: 'apod_last_notify_ymd'
+            GEMINI: 'apod_gemini_key'
 
         };
 
-        const NOTIFY_ICON = 'https://cdn-icons-png.flaticon.com/512/2626/2626293.png';
-
         let currentImgUrl = '';
-
-        let notifyIntervalId = null;
 
 
 
@@ -280,51 +247,15 @@
 
             const gKey = localStorage.getItem(STORAGE.GEMINI);
 
-            if (localStorage.getItem(STORAGE.TIME)) document.getElementById('notify-time').value = localStorage.getItem(STORAGE.TIME);
-
-            if (Notification.permission === 'granted') document.getElementById('btn-perm').textContent = '許可済';
-
             if (!nKey || !gKey) { document.getElementById('config-section').classList.remove('hidden'); }
 
             else { fetchApod(nKey, gKey); }
-
-            startNotificationScheduler();
-
-            document.addEventListener('visibilitychange', () => {
-
-                if (document.visibilityState === 'visible') tickDailyNotification();
-
-            });
 
         };
 
 
 
         function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
-
-
-
-        function saveKeys() {
-
-            const nInput = document.getElementById('nasa-key').value.trim();
-
-            const gInput = document.getElementById('gemini-key').value.trim();
-
-            const n = nInput || localStorage.getItem(STORAGE.NASA) || 'DEMO_KEY';
-
-            const g = gInput || localStorage.getItem(STORAGE.GEMINI);
-
-            if (!g) return showToast('Gemini APIキーが必要です');
-
-            localStorage.setItem(STORAGE.NASA, n);
-
-            localStorage.setItem(STORAGE.GEMINI, g);
-
-            localStorage.setItem(STORAGE.TIME, document.getElementById('notify-time').value);
-
-            location.reload();
-
-        }
 
 
 
@@ -532,36 +463,6 @@ ${text}`;
 
 
 
-        async function downloadImage() {
-
-            if (!currentImgUrl) return;
-
-            showToast('画像を生成中...');
-
-            try {
-
-                const response = await fetch(currentImgUrl);
-
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-
-                const a = document.createElement('a'); a.href = url;
-
-                a.download = `NASA-APOD.jpg`;
-
-                a.click();
-
-                showToast('保存しました ✨');
-
-            } catch (e) { window.open(currentImgUrl, '_blank'); }
-
-        }
-
-
-
-        function triggerWallpaper() { showToast('保存した画像を壁紙に設定してください'); downloadImage(); }
-
         function toggleLoading(isLoading) {
 
             document.getElementById('skeleton-img').style.display = isLoading ? 'block' : 'none';
@@ -579,92 +480,6 @@ ${text}`;
             t.classList.remove('opacity-0', 'translate-y-4');
 
             setTimeout(() => t.classList.add('opacity-0', 'translate-y-4'), 3000);
-
-        }
-
-        function getScheduledHourMinute() {
-
-            const raw = localStorage.getItem(STORAGE.TIME);
-
-            if (!raw || !raw.includes(':')) return null;
-
-            const [h, m] = raw.split(':').map((x) => parseInt(x, 10));
-
-            if (Number.isNaN(h) || Number.isNaN(m)) return null;
-
-            return { h, m };
-
-        }
-
-
-
-        function tickDailyNotification() {
-
-            if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-
-            const hm = getScheduledHourMinute();
-
-            if (!hm) return;
-
-            const now = new Date();
-
-            if (now.getHours() !== hm.h || now.getMinutes() !== hm.m) return;
-
-            const ymd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-            if (localStorage.getItem(STORAGE.LAST_NOTIFY) === ymd) return;
-
-            localStorage.setItem(STORAGE.LAST_NOTIFY, ymd);
-
-            try {
-
-                new Notification('APOD Wall-Supporter', {
-
-                    body: '今日の NASA APOD をチェックしましょう',
-
-                    icon: NOTIFY_ICON,
-
-                    tag: `apod-${ymd}`
-
-                });
-
-            } catch (e) { /* ignore */ }
-
-        }
-
-
-
-        function startNotificationScheduler() {
-
-            if (notifyIntervalId != null) clearInterval(notifyIntervalId);
-
-            tickDailyNotification();
-
-            notifyIntervalId = setInterval(tickDailyNotification, 30 * 1000);
-
-        }
-
-
-
-        async function requestNotificationPermission() {
-
-            if (typeof Notification === 'undefined') {
-
-                showToast('この環境は通知に対応していません');
-
-                return;
-
-            }
-
-            if (await Notification.requestPermission() === 'granted') {
-
-                showToast('通知を許可しました');
-
-                document.getElementById('btn-perm').textContent = '許可済';
-
-                startNotificationScheduler();
-
-            }
 
         }
 
