@@ -13,17 +13,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
     
-    <!-- Icons: リンク切れやキャッシュを防ぐため複数のタグを記述 -->
-    <link rel="icon" type="image/png" sizes="192x192" href="https://img.icons8.com/fluency/192/rocket.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="https://img.icons8.com/fluency/512/rocket.png">
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/512/rocket.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/rocket.png">
     
-    <!-- manifest.jsonの後にクエリをつけて強制更新を促す -->
-    <link rel="manifest" href="manifest.json?v=2">
+    <!-- Inline Manifest: 最初の成功パターン -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"APOD Wall-Supporter","short_name":"APOD","display":"standalone","start_url":".","background_color":"#050505","theme_color":"#050505","icons":[{"src":"https://img.icons8.com/fluency/512/rocket.png","sizes":"512x512","type":"image/png"}]}'>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e0e0e0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #e0e0e0; -webkit-tap-highlight-color: transparent; margin: 0; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .loading-shimmer { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
@@ -52,7 +51,7 @@
             <button onclick="saveKeys()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">設定を保存</button>
         </div>
 
-        <div id="image-container" class="relative group">
+        <div id="image-container" class="relative">
             <div id="skeleton-img" class="w-full aspect-[9/16] rounded-[2.5rem] loading-shimmer hidden"></div>
             <img id="apod-img" class="w-full h-auto min-h-[300px] rounded-[2.5rem] object-cover shadow-2xl transition-opacity duration-1000 opacity-0" alt="APOD">
             <div id="media-error" class="hidden absolute inset-0 flex items-center justify-center text-center p-8 text-sm text-gray-400 glass rounded-[2.5rem]">本日のコンテンツは静止画ではありません</div>
@@ -63,31 +62,26 @@
             <div id="info-content">
                 <h2 id="apod-title" class="text-xl font-bold text-white leading-tight mb-1"></h2>
                 <p id="apod-date" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-6"></p>
-                <div id="explanation-container" class="space-y-4">
+                <div class="space-y-4">
                     <p id="explanation-ja" class="text-sm leading-relaxed text-gray-300 font-medium">宇宙の彼方からデータを取得中...</p>
-                    <div id="error-display" class="hidden text-[10px] text-red-400 bg-red-950/30 p-3 rounded-lg border border-red-900/50"></div>
-                    <details class="text-[10px] text-gray-600 group">
-                        <summary class="cursor-pointer hover:text-gray-400 transition list-none flex items-center gap-1">Original Description</summary>
-                        <p id="explanation-en" class="mt-3 leading-relaxed italic border-l border-white/5 pl-4 py-1 text-gray-500"></p>
+                    <details class="text-[10px] text-gray-600">
+                        <summary class="cursor-pointer list-none">Original Description</summary>
+                        <p id="explanation-en" class="mt-3 italic text-gray-500"></p>
                     </details>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="toast" class="fixed bottom-12 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl translate-y-4"></div>
+    <div id="toast" class="fixed bottom-12 left-1/2 -translate-x-1/2 px-8 py-4 rounded-full bg-white text-black text-xs font-black opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl"></div>
 
     <script>
         const STORAGE = { NASA: 'apod_nasa_key', GEMINI: 'apod_gemini_key' };
-        const GEMINI_TRANSLATE_MODEL = 'gemini-3.1-flash-lite-preview';
-
+        
         window.onload = () => {
+            // Service Worker (アイコン化に必須)
             if ('serviceWorker' in navigator) {
-                // Service Workerを強制的に更新させる
-                navigator.serviceWorker.register('sw.js?v=2').then(reg => {
-                    reg.update();
-                    console.log('SW registered');
-                }).catch(err => console.log('SW error:', err));
+                navigator.serviceWorker.register('sw.js').catch(() => {});
             }
             const nKey = localStorage.getItem(STORAGE.NASA);
             const gKey = localStorage.getItem(STORAGE.GEMINI);
@@ -96,12 +90,11 @@
         };
 
         function toggleConfig() { document.getElementById('config-section').classList.toggle('hidden'); }
+        
         function saveKeys() {
-            const nInput = document.getElementById('nasa-key').value.trim();
-            const gInput = document.getElementById('gemini-key').value.trim();
-            const n = nInput || localStorage.getItem(STORAGE.NASA) || 'DEMO_KEY';
-            const g = gInput || localStorage.getItem(STORAGE.GEMINI);
-            if (!g) return showToast('Gemini APIキーが必要です');
+            const n = document.getElementById('nasa-key').value.trim() || 'DEMO_KEY';
+            const g = document.getElementById('gemini-key').value.trim();
+            if (!g) return alert('Gemini APIキーが必要です');
             localStorage.setItem(STORAGE.NASA, n);
             localStorage.setItem(STORAGE.GEMINI, g);
             location.reload();
@@ -109,49 +102,43 @@
 
         async function fetchApod(nasaKey, geminiKey) {
             toggleLoading(true);
-            const errEl = document.getElementById('error-display');
-            errEl.classList.add('hidden');
             try {
-                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(nasaKey)}`);
+                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${nasaKey}`);
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error?.message || `NASA API Error: ${res.status}`);
-                if (data.media_type !== 'image') { document.getElementById('media-error').classList.remove('hidden'); return; }
+                if (data.media_type !== 'image') {
+                    document.getElementById('media-error').classList.remove('hidden');
+                    return;
+                }
                 const img = document.getElementById('apod-img');
-                img.src = data.hdurl || data.url;
+                img.src = data.url;
                 img.onload = () => img.classList.add('opacity-100');
                 document.getElementById('apod-title').textContent = data.title;
                 document.getElementById('apod-date').textContent = data.date;
                 document.getElementById('explanation-en').textContent = data.explanation;
-                await translateText(data.explanation, geminiKey);
-            } catch (err) {
-                errEl.textContent = `Error: ${err.message}`; errEl.classList.remove('hidden');
-                document.getElementById('explanation-ja').textContent = '取得に失敗しました。';
+                await translate(data.explanation, geminiKey);
+            } catch (e) {
+                document.getElementById('explanation-ja').textContent = 'エラーが発生しました。';
             } finally { toggleLoading(false); }
         }
 
-        async function translateText(text, apiKey) {
-            const jaEl = document.getElementById('explanation-ja'); jaEl.textContent = "翻訳中...";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TRANSLATE_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
-            const prompt = `Translate to natural Japanese. Rules: Plain text only. Output ONLY the translation. Text: ${text}`;
+        async function translate(text, key) {
             try {
-                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2 } })
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "以下の英文を自然な日本語に翻訳してください。出力は翻訳結果のみにしてください：\n\n" + text }] }] })
                 });
                 const data = await res.json();
-                const part = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                jaEl.textContent = part ? part.trim() : "翻訳を取得できませんでした。";
-            } catch (e) { jaEl.textContent = "翻訳エラーが発生しました。"; }
+                document.getElementById('explanation-ja').textContent = data.candidates[0].content.parts[0].text;
+            } catch (e) {
+                document.getElementById('explanation-ja').textContent = '翻訳に失敗しました。';
+            }
         }
 
         function toggleLoading(isLoading) {
             document.getElementById('skeleton-img').style.display = isLoading ? 'block' : 'none';
             document.getElementById('skeleton-text').style.display = isLoading ? 'block' : 'none';
             document.getElementById('info-content').style.display = isLoading ? 'none' : 'block';
-        }
-        function showToast(msg) {
-            const t = document.getElementById('toast'); t.textContent = msg;
-            t.classList.remove('opacity-0', 'translate-y-4');
-            setTimeout(() => t.classList.add('opacity-0', 'translate-y-4'), 3000);
         }
     </script>
 </body>
