@@ -144,7 +144,7 @@
 
             <div class="space-y-3">
 
-                <input type="password" id="nasa-key" placeholder="NASA API Key (DEMO_KEY)"
+                <input type="password" id="nasa-key" placeholder="NASA API Key（旧設定・新APIでは不要）"
                     class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
 
                 <input type="password" id="gemini-key" placeholder="Gemini API Key"
@@ -269,7 +269,7 @@
                 if (document.visibilityState === 'hidden') persistConfigKeys();
             });
 
-            if (!nKey || !gKey) { document.getElementById('config-section').classList.remove('hidden'); }
+            if (!gKey) { document.getElementById('config-section').classList.remove('hidden'); }
 
             else { fetchApod(nKey, gKey); }
 
@@ -327,99 +327,120 @@
 
 
 
-        async function fetchApod(nasaKey, geminiKey) {
+        const APOD_ENDPOINT = 'https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1';
+        let apodRequestId = 0;
 
-            toggleLoading(true);
-
-            const errEl = document.getElementById('error-display');
-
-            errEl.classList.add('hidden');
-
-            errEl.textContent = '';
-
-            try {
-
-                const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(nasaKey)}`);
-
-                const data = await res.json().catch(() => ({}));
-
-                if (!res.ok) {
-
-                    const msg = data.error?.message || data.msg || `HTTP ${res.status}`;
-
-                    const isDemo = String(nasaKey).toUpperCase() === 'DEMO_KEY';
-
-                    const hint = res.status === 429 && isDemo
-
-                        ? '（DEMO_KEY は時間あたりの上限が厳しいです。本番用の NASA API キーへの切り替えを検討してください）'
-
-                        : '';
-
-                    errEl.textContent = `NASA API: ${msg}${hint}`;
-
-                    errEl.classList.remove('hidden');
-
-                    document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
-
-                    showToast('NASA API エラー');
-
-                    return;
-
-                }
-
-                if (data.code || data.error) {
-
-                    errEl.textContent = `NASA API: ${data.error || data.msg || data.code}`;
-
-                    errEl.classList.remove('hidden');
-
-                    document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
-
-                    showToast('NASA API エラー');
-
-                    return;
-
-                }
-
-                if (data.media_type !== 'image') {
-
-                    document.getElementById('media-error').classList.remove('hidden');
-
-                    return;
-
-                }
-
-                currentImgUrl = data.hdurl || data.url;
-
-                const img = document.getElementById('apod-img');
-
-                img.src = currentImgUrl;
-
-                img.onload = () => img.classList.add('opacity-100');
-
-                document.getElementById('apod-title').textContent = data.title;
-
-                document.getElementById('apod-date').textContent = data.date;
-
-                document.getElementById('explanation-en').textContent = data.explanation;
-
-                await translateText(data.explanation, geminiKey);
-
-            } catch (err) {
-
-                errEl.textContent = `接続エラー: ${err.message || String(err)}（file:// で開いているとブラウザが API をブロックすることがあります。ローカルサーバー経由で開いてください）`;
-
-                errEl.classList.remove('hidden');
-
-                document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
-
-                showToast('NASA通信エラー');
-
-            } finally { toggleLoading(false); }
-
+        function plainText(html) {
+            const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+            doc.querySelectorAll('script, style').forEach(el => el.remove());
+            doc.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
+            return (doc.body.textContent || '').trim();
         }
 
+        function normalizeApod(payload) {
+            const data = Array.isArray(payload) ? payload[0] : payload;
+            if (!data || data.error || data.code) throw new Error(data?.message || data?.msg || 'APODデータがありません');
+            const doc = new DOMParser().parseFromString(data.basic_html || '', 'text/html');
+            const candidates = [];
+            const addImage = value => {
+                try {
+                    const url = new URL(value, data.permalink || APOD_ENDPOINT);
+                    // url is now an article link. Reject pages and site branding.
+                    if (!/^https?:$/.test(url.protocol) || !/\.(?:jpe?g|png|gif|webp|avif)$/i.test(url.pathname)
+                        || /(?:nasa[-_]?logo|nasa[-_]?meatball|favicon|\/logos?\/)/i.test(url.pathname)) return;
+                    if (!candidates.includes(url.href)) candidates.push(url.href);
+                } catch (_) { /* Missing or invalid URL. */ }
+            };
+            if (data.hdurl) addImage(data.hdurl);
+            doc.querySelectorAll('body img').forEach(img => {
+                const link = img.closest('a');
+                if (link?.getAttribute('href')) addImage(link.getAttribute('href'));
+                if (img.getAttribute('src')) addImage(img.getAttribute('src'));
+            });
+            // Only inspect the APOD Basic document, never generic article metadata.
+            doc.querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]').forEach(meta => addImage(meta.content));
+            if (data.url && data.url !== data.permalink) addImage(data.url);
+            let title = plainText(data.title?.rendered || data.title);
+            if (!title || /^NASA Science$/i.test(title)) {
+                title = plainText(doc.querySelector('meta[property="og:title"]')?.content || doc.title)
+                    .replace(/^APOD:\s*\d{4}\s+\w+\s+\d{1,2}\s*[-–—]\s*/i, '');
+            }
+            if (!title || /^NASA Science$/i.test(title)) title = 'Astronomy Picture of the Day';
+            return { ...data, title, explanation: plainText(data.explanation), candidates };
+        }
 
+        function showMediaError(message) {
+            document.getElementById('apod-img').classList.add('hidden');
+            document.getElementById('image-container').style.minHeight = '300px';
+            const el = document.getElementById('media-error');
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        function loadApodImage(data, requestId) {
+            const img = document.getElementById('apod-img');
+            let index = 0;
+            const next = () => {
+                if (requestId !== apodRequestId) return;
+                if (index >= data.candidates.length) {
+                    currentImgUrl = '';
+                    img.onload = img.onerror = null;
+                    img.removeAttribute('src');
+                    showMediaError('画像を読み込めませんでした。時間をおいて再読み込みしてください。');
+                    return;
+                }
+                img.src = data.candidates[index++];
+            };
+            // Register before src, including for cached images.
+            img.onload = () => {
+                if (requestId !== apodRequestId) return;
+                currentImgUrl = img.src;
+                img.classList.remove('opacity-0');
+                img.classList.add('opacity-100');
+            };
+            img.onerror = next;
+            img.alt = plainText(data.alt) || data.title;
+            next();
+        }
+
+        async function fetchApod(nasaKey, geminiKey) {
+            const requestId = ++apodRequestId;
+            toggleLoading(true);
+            currentImgUrl = '';
+            const img = document.getElementById('apod-img');
+            img.onload = img.onerror = null;
+            img.removeAttribute('src');
+            img.classList.remove('hidden', 'opacity-100');
+            img.classList.add('opacity-0');
+            document.getElementById('image-container').style.minHeight = '';
+            document.getElementById('media-error').classList.add('hidden');
+            ['apod-title', 'apod-date', 'explanation-en'].forEach(id => document.getElementById(id).textContent = '');
+            const errEl = document.getElementById('error-display');
+            errEl.classList.add('hidden');
+            errEl.textContent = '';
+            try {
+                const res = await fetch(APOD_ENDPOINT);
+                const payload = await res.json();
+                if (requestId !== apodRequestId) return;
+                if (!res.ok) throw new Error(payload.message || payload.error?.message || `HTTP ${res.status}`);
+                const data = normalizeApod(payload);
+                document.getElementById('apod-title').textContent = data.title;
+                document.getElementById('apod-date').textContent = data.date || '';
+                document.getElementById('explanation-en').textContent = data.explanation;
+                if (data.media_type === 'image') loadApodImage(data, requestId);
+                else showMediaError('本日のコンテンツは静止画ではありません');
+                await translateText(data.explanation, geminiKey, requestId);
+            } catch (err) {
+                if (requestId !== apodRequestId) return;
+                errEl.textContent = `NASA API: ${err.message || String(err)}`;
+                errEl.classList.remove('hidden');
+                document.getElementById('explanation-ja').textContent = '上記のとおり取得できませんでした。';
+                showMediaError('APODを取得できませんでした。再読み込みしてください。');
+                showToast('NASA通信エラー');
+            } finally {
+                if (requestId === apodRequestId) toggleLoading(false);
+            }
+        }
 
         /**
 
@@ -435,9 +456,10 @@
 
 
 
-        async function translateText(text, apiKey) {
+        async function translateText(text, apiKey, requestId = apodRequestId) {
 
-            const jaEl = document.getElementById('explanation-ja');
+            const target = document.getElementById('explanation-ja');
+            const jaEl = { set textContent(value) { if (requestId === apodRequestId) target.textContent = value; } };
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TRANSLATE_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
 

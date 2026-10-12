@@ -16,7 +16,7 @@ NASA の [Astronomy Picture of the Day (APOD)](https://api.nasa.gov/) を表示�
 
 | 用途 | 内容 |
 |------|------|
-| NASA APOD | [api.nasa.gov](https://api.nasa.gov/) の API キー。**未入力時は `DEMO_KEY`**（利用制限あり） |
+| NASA APOD | [NASA Science API](https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1)。APIキー不要 |
 | 日本語訳 | [Google AI Studio](https://aistudio.google.com/) 等で取得した **Gemini API キー**（必須） |
 
 翻訳にはコード内で `Gemini 3.1 Flash-Lite` モデルを指定しています。モデル名や API の仕様が変わった場合は `index.html` 内の `translateText` を編集してください。
@@ -25,7 +25,7 @@ NASA の [Astronomy Picture of the Day (APOD)](https://api.nasa.gov/) を表示�
 
 1. `index.html` をブラウザで開く。  
    - ローカルファイル（`file://`）でも動く場合がありますが、**通知や一部 API の挙動は `http(s)://` での提供が安定**しがちです。簡易サーバ例: `python3 -m http.server 8080`
-2. 初回は設定パネルが開きます。**Gemini API キー**を入力し、必要なら NASA キーも入力します。
+2. 初回は設定パネルが開きます。**Gemini API キー**を入力し、NASA キーは不要です。以前のキーの保存機能は互換性のため残しています。
 3. **設定を保存**すると、APOD の取得と翻訳が走ります。
 4. 歯車アイコンから設定をいつでも開けます。  
    - **通知時刻**と**通知許可**は任意。  
@@ -54,3 +54,9 @@ API キー・通知時刻・最後に通知した日付などは、ブラウザ�
 ## ライセンス
 
 リポジトリや配布元の方針に合わせて記載してください。NASA メディアの利用条件は [NASA Image and Media Library](https://www.nasa.gov/nasa-brand-center/images-and-media/) 等を参照してください。
+
+## APOD APIの移行
+
+[NASA公式の移行案内](https://github.com/nasa/apod-api#notes)に従い、2026年9月10日更新のNASA Science APIへ直接アクセスします。`per_page=1`で最新の公開済みAPODを取得します（当日分が未公開なら直近の公開分）。`url` / `permalink`は記事URLなので画像には使いません。`hdurl`を優先し、読み込み失敗時は`basic_html`内の画像リンク・画像・メタデータを順に試します。候補がすべて失敗した場合はエラーを表示し、本文と翻訳は維持します。説明文のHTMLはプレーンテキストへ変換します。
+
+検証: `node tests/apod.cjs`（Playwrightが必要。`APOD_NODE_MODULES`で配置先を指定可能）。
